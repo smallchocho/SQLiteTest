@@ -8,18 +8,24 @@
 
 import Foundation
 class SQLiteManager{
-    static let shared = SQLiteManager()
-    private init(){}
+    let sqlitePath:String
+    init?(path:String){
+        sqlitePath = path
+        db = self.openSQLiteDatabase(path: sqlitePath)
+        if db == nil { return nil }
+    }
+    
     var db:OpaquePointer?
-    var statement:OpaquePointer?
-    func openSQLiteOnLine()->Bool{
+    func openSQLiteDatabase(path:String)->OpaquePointer?{
+        
         let urls = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-        guard let path = urls.first?.absoluteString else{ return false }
+        guard let path = urls.first?.absoluteString else{ return nil }
         let sqlitePath = path + "sqlite3.db"
         if sqlite3_open(sqlitePath,&db) == SQLITE_OK{
-            return true
+            print("成功打開Database:\(sqlitePath)")
+            return db
         }
-        return false
+        return nil
     }
     func creatSQLiteTable()->Bool{
         let sql = "create table if not exists students "
@@ -32,7 +38,8 @@ class SQLiteManager{
         }
         return false
     }
-    func addData(){
+    func creatData(){
+        var statement:OpaquePointer?
         let sql = "insert into students "
             + "(name, height) "
             + "values ('小強', 178.2)" as NSString
@@ -43,7 +50,42 @@ class SQLiteManager{
             sqlite3_finalize(statement)
         }
     }
-    func loadData(){
+    func readData(){
+        var statement:OpaquePointer?
+        let sql = "select * from students" as NSString
+        let sqlitePrepare = sqlite3_prepare_v2(db, sql.utf8String, -1, &statement, nil)
+        while sqlitePrepare == SQLITE_ROW{
+            let id = sqlite3_column_int(statement, 0)
+            if let nameValue = sqlite3_column_text(statement, 1){
+                let name = String(cString: nameValue)
+            }
+            let height = sqlite3_column_double(statement, 2)
+        }
+    }
+    func updateDate()->Bool{
+        var statement:OpaquePointer?
+        let sql = "update students set name='小強' where id = 1" as NSString
+        let sqlite3Prepare = sqlite3_prepare_v2(db, sql.utf8String, -1, &statement, nil)
+        guard sqlite3Prepare == SQLITE_OK else{ return false }
+        if sqlite3_step(statement) == SQLITE_DONE{
+            sqlite3_finalize(statement)
+            return true
+        }
+        sqlite3_finalize(statement)
+        return false
         
+        
+    }
+    func deleteData()->Bool{
+        var statement:OpaquePointer?
+        let sql = "delete from students where id = 3" as NSString
+        let sqlite3Prepare = sqlite3_prepare_v2(db, sql.utf8String, -1, &statement, nil)
+        guard sqlite3Prepare == SQLITE_OK else{ return false }
+        if sqlite3_step(statement) == SQLITE_DONE {
+            sqlite3_finalize(statement)
+            return true
+        }
+        sqlite3_finalize(statement)
+        return false
     }
 }
