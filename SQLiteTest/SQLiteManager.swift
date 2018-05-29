@@ -8,6 +8,7 @@
 
 import Foundation
 class SQLiteManager{
+    static let sqlitePath = NSHomeDirectory() + "/Documents/sqlite3.db"
     let sqlitePath:String
     init?(path:String){
         sqlitePath = path
@@ -25,67 +26,94 @@ class SQLiteManager{
             print("成功打開Database:\(sqlitePath)")
             return db
         }
+        print("不存在Database:\(sqlitePath)")
         return nil
     }
-    func creatSQLiteTable()->Bool{
-        let sql = "create table if not exists students "
-            + "( id integer primary key autoincrement, "
-            + "name text, height double)" as NSString
-        
+    func creatSQLiteTable(name:String,columsInfo:[String])->Bool{
+        let columsInfoAddSeparator = columsInfo.joined(separator: ",")
+        let sql = "create table if not exists \(name) "
+            + "( \(columsInfoAddSeparator) )" as NSString
         if sqlite3_exec(db, sql.utf8String, nil, nil, nil)
             == SQLITE_OK{
+            print("建立表格成功")
             return true
         }
+        print("建立表格失敗")
         return false
     }
-    func creatData(){
+    func creatData(name:String,rowInfo:[String:String])->Bool{
         var statement:OpaquePointer?
-        let sql = "insert into students "
-            + "(name, height) "
-            + "values ('小強', 178.2)" as NSString
-        if sqlite3_prepare_v2(db, sql.utf8String, -1, &statement, nil) == SQLITE_OK{
-            if sqlite3_step(statement) == SQLITE_DONE {
-                print("新增資料成功")
-            }
+        let sql = "insert into \(name) "
+            + "(\(rowInfo.keys.joined(separator: ","))) "
+            + "values "
+            + "(\(rowInfo.values.joined(separator: ",")))"
+        guard sqlite3_prepare_v2(db, (sql as NSString).utf8String, -1, &statement, nil) == SQLITE_OK else{
+            print("新增資料失敗")
+            return false
+        }
+        guard sqlite3_step(statement) == SQLITE_DONE else{
             sqlite3_finalize(statement)
+            print("新增資料失敗")
+            return false
         }
-    }
-    func readData(){
-        var statement:OpaquePointer?
-        let sql = "select * from students" as NSString
-        let sqlitePrepare = sqlite3_prepare_v2(db, sql.utf8String, -1, &statement, nil)
-        while sqlitePrepare == SQLITE_ROW{
-            let id = sqlite3_column_int(statement, 0)
-            if let nameValue = sqlite3_column_text(statement, 1){
-                let name = String(cString: nameValue)
-            }
-            let height = sqlite3_column_double(statement, 2)
-        }
-    }
-    func updateDate()->Bool{
-        var statement:OpaquePointer?
-        let sql = "update students set name='小強' where id = 1" as NSString
-        let sqlite3Prepare = sqlite3_prepare_v2(db, sql.utf8String, -1, &statement, nil)
-        guard sqlite3Prepare == SQLITE_OK else{ return false }
-        if sqlite3_step(statement) == SQLITE_DONE{
-            sqlite3_finalize(statement)
-            return true
-        }
-        sqlite3_finalize(statement)
-        return false
-        
+        print("新增資料成功")
+        return true
         
     }
-    func deleteData()->Bool{
+    func readData(name:String,cond:String?,order:String?)->OpaquePointer?{
         var statement:OpaquePointer?
-        let sql = "delete from students where id = 3" as NSString
-        let sqlite3Prepare = sqlite3_prepare_v2(db, sql.utf8String, -1, &statement, nil)
-        guard sqlite3Prepare == SQLITE_OK else{ return false }
+        var sql = "select * from \(name)"
+        if let condition = cond {
+            sql += " where \(condition)"
+        }
+        if let orderBy = order{
+            sql += " order by \(orderBy)"
+        }
+        sqlite3_prepare_v2(db, (sql as NSString).utf8String, -1, &statement, nil)
+        return statement
+
+    }
+    func updateDate(name:String,cond :String?, rowInfo :[String:String])->Bool{
+        var statement:OpaquePointer?
+        var sql = "update \(name) set"
+        var info:[String] = []
+        for (k,v) in rowInfo{
+            info.append("\(k) = \(v)")
+        }
+        sql += info.joined(separator: ",")
+        if let condition = cond {
+            sql += "where \(condition)"
+        }
+        let sqlite3Prepare = sqlite3_prepare_v2(db, (sql as NSString).utf8String, -1, &statement, nil)
+        guard sqlite3Prepare == SQLITE_OK else{
+            print("準備更新資料失敗")
+            return false
+        }
+        guard sqlite3_step(statement) == SQLITE_DONE else{
+            sqlite3_finalize(statement)
+            print("更新資料失敗")
+            return false
+        }
+        print("更新資料成功")
+        return true
+    }
+    func deleteData(name:String,cond:String?)->Bool{
+        var statement:OpaquePointer?
+        var sql = "delete from \(name)"
+        if let condition = cond {
+            sql += "where \(condition)"
+        }
+        let sqlite3Prepare = sqlite3_prepare_v2(db, (sql as NSString).utf8String, -1, &statement, nil)
+        guard sqlite3Prepare == SQLITE_OK else{
+            print("準備刪除資料失敗")
+            return false
+        }
         if sqlite3_step(statement) == SQLITE_DONE {
-            sqlite3_finalize(statement)
+            print("刪除資料成功")
             return true
         }
         sqlite3_finalize(statement)
+        print("刪除資料失敗")
         return false
     }
 }
