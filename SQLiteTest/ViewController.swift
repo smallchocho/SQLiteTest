@@ -9,10 +9,10 @@
 import UIKit
 
 class ViewController: UIViewController {
-    var dbManager:SQLiteManager?
+    var dataBaseManager:SQLiteManager?
     override func viewDidLoad() {
         super.viewDidLoad()
-        dbManager = self.initSQLiteData()
+        dataBaseManager = self.initSQLiteData()
         self.readSQLiteData()
         // Do any additional setup after loading the view, typically from a nib.
     }
@@ -24,11 +24,12 @@ class ViewController: UIViewController {
     
     func initSQLiteData()->SQLiteManager?{
         guard let manager = SQLiteManager(path: SQLiteManager.sqlitePath) else{ return nil }
+        guard manager.creatStudentsDefaultData() else{ return nil }
         return manager
     }
     
     func readSQLiteData(){
-        dbManager?.readData(name: SQLiteManager.students, cond: "1 == 1", order: nil){
+        dataBaseManager?.readData(name: SQLiteManager.students, cond: "1 == 1", order: nil){
             (success:Bool,statement:OpaquePointer?) in
             guard success else{ return }
             let id = sqlite3_column_int(statement, 0)

@@ -16,7 +16,6 @@ class SQLiteManager{
         sqlitePath = path
         db = self.openSQLiteDatabase(path: sqlitePath)
         if db == nil { return nil }
-        guard creatSQLiteTable(name: SQLiteManager.students, columsInfo: SQLiteManager.studentsColumsInfo) else{ return nil }
     }
     
     var db:OpaquePointer?
@@ -38,15 +37,25 @@ class SQLiteManager{
             + "( \(columsInfoAddSeparator) )" as NSString
         if sqlite3_exec(db, sql.utf8String, nil, nil, nil)
             == SQLITE_OK{
-            print("建立表格成功")
+            print("建立\(name) Table成功")
             return true
         }
-        print("建立表格失敗")
+        print("建立\(name) Table失敗")
         return false
     }
     
     func creatStudentsDefaultData()->Bool{
-        return self.creatData(name: SQLiteManager.students, rowInfo: ["name":"Justin","height":189.9])
+//        readData(name: SQLiteManager.students, cond: "1 == 1", order: nil) { (success, statement) in
+//            guard success else{ return }
+//            
+//        }
+        guard creatSQLiteTable(name: SQLiteManager.students, columsInfo: SQLiteManager.studentsColumsInfo) else{
+            return false
+        }
+        guard self.creatData(name: SQLiteManager.students, rowInfo: ["name":"Justin","height":189.9]) else{
+            return false
+        }
+        return true
     }
     
     
@@ -76,15 +85,15 @@ class SQLiteManager{
             + "values "
             + "(\(infoValues.joined(separator: ",")))"
         guard sqlite3_prepare_v2(db, (sql as NSString).utf8String, -1, &statement, nil) == SQLITE_OK else{
-            print("新增資料失敗")
+            print("建立\(SQLiteManager.students) data失敗")
             return false
         }
         guard sqlite3_step(statement) == SQLITE_DONE else{
             sqlite3_finalize(statement)
-            print("新增資料失敗")
+            print("建立\(SQLiteManager.students) data失敗")
             return false
         }
-        print("新增資料成功")
+        print("建立\(SQLiteManager.students) data成功")
         return true
         
     }
@@ -99,6 +108,7 @@ class SQLiteManager{
         }
         let sqlitePrepare = sqlite3_prepare_v2(db, (sql as NSString).utf8String, -1, &statement, nil)
         guard sqlitePrepare == SQLITE_OK else{
+            print("準備讀取\(name) 資料失敗")
             completion(false,nil)
             return
         }
@@ -106,8 +116,8 @@ class SQLiteManager{
             completion(true,statement)
         }
         sqlite3_finalize(statement)
-
     }
+    
     func updateDate(name:String,cond :String?, rowInfo :[String:String])->Bool{
         var statement:OpaquePointer?
         var sql = "update \(name) set"
@@ -121,16 +131,16 @@ class SQLiteManager{
         }
         let sqlite3Prepare = sqlite3_prepare_v2(db, (sql as NSString).utf8String, -1, &statement, nil)
         guard sqlite3Prepare == SQLITE_OK else{
-            print("準備更新資料失敗")
+            print("準備更新\(name) 資料失敗")
             return false
         }
         guard sqlite3_step(statement) == SQLITE_DONE else{
             sqlite3_finalize(statement)
-            print("更新資料失敗")
+            print("更新\(name) 資料失敗")
             return false
         }
         sqlite3_finalize(statement)
-        print("更新資料成功")
+        print("更新\(name) 資料成功")
         return true
     }
     func deleteData(name:String,cond:String?)->Bool{
@@ -141,16 +151,16 @@ class SQLiteManager{
         }
         let sqlite3Prepare = sqlite3_prepare_v2(db, (sql as NSString).utf8String, -1, &statement, nil)
         guard sqlite3Prepare == SQLITE_OK else{
-            print("準備刪除資料失敗")
+            print("準備刪除\(name) 資料失敗")
             return false
         }
         if sqlite3_step(statement) == SQLITE_DONE {
             sqlite3_finalize(statement)
-            print("刪除資料成功")
+            print("刪除\(name) 資料成功")
             return true
         }
         sqlite3_finalize(statement)
-        print("刪除資料失敗")
+        print("刪除\(name) 資料失敗")
         return false
     }
 }
