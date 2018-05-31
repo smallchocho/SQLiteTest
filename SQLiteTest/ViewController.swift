@@ -16,6 +16,11 @@ class ViewController: UIViewController {
     @IBOutlet weak var nameTextField: UITextField!
     @IBOutlet weak var heightTextField: UITextField!
     
+
+    
+    @IBOutlet weak var editNameTextField: UITextField!
+    @IBOutlet weak var editHeightTextField: UITextField!
+    
     
     var readResult:String = ""{
         didSet{
@@ -27,12 +32,15 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.readSQLiteData()
+        self.initTextField()
         // Do any additional setup after loading the view, typically from a nib.
     }
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+    func initTextField(){
+        self.nameTextField.delegate = self
+        self.heightTextField.delegate = self
+        self.editNameTextField.delegate = self
+        self.editHeightTextField.delegate = self
     }
     
     func initSQLiteManager()->SQLiteManager?{
@@ -41,9 +49,9 @@ class ViewController: UIViewController {
         return manager
     }
     
-    func readSQLiteData(){
+    func readSQLiteData(cond:String? = "1 == 1"){
         var result = ""
-        dataBaseManager?.readData(name: SQLiteManager.students, cond: "1 == 1", order: nil){
+        dataBaseManager?.readData(name: SQLiteManager.students, cond: cond, order: nil){
             (success:Bool,statement:OpaquePointer?) in
             guard success else{ return }
             let id = sqlite3_column_int(statement, 0)
@@ -64,26 +72,35 @@ class ViewController: UIViewController {
     }
     
     func deleteSQLiteData(){
-        let condition = self.createConditon()
+        let condition = self.createConditon(name: nameTextField.text , height: heightTextField.text)
         print(condition)
-        if condition.isEmpty {return}
+        if condition.isEmpty { return }
         let _ = dataBaseManager?.deleteData(name: SQLiteManager.students, cond: condition)
     }
     
     func updateSQLiteData(){
-        let condition = self.createConditon()
+        let condition = self.createConditon(name: nameTextField.text , height: heightTextField.text)
         print(condition)
-        let _ = dataBaseManager?.updateDate(name: SQLiteManager.students, cond: condition, rowInfo: ["name" : "test" , "height": 100.0])
+        var rowInfo:[String:Any] = [:]
+        if let name = editNameTextField.text {
+            rowInfo["name"] = name
+        }
+        if let heightValue = editHeightTextField.text {
+            if let height = Double(heightValue){
+                rowInfo["height"] = height
+            }
+        }
+        let _ = dataBaseManager?.updateDate(name: SQLiteManager.students, cond: condition, rowInfo: rowInfo)
     }
     
-    func createConditon()->String{
-        var condition = ""
-        if let name = nameTextField.text {
+    func createConditon(name:String?,height:String?)->String{
+        var condition:String = ""
+        if let name = name {
             if !name.isEmpty {
                 condition += "name = '\(name)'"
             }
         }
-        if let heightText = heightTextField.text{
+        if let heightText = height{
             if let height = Double(heightText){
                 if condition != "" { condition += " and "}
                 condition += "height = \(height)"
@@ -93,7 +110,12 @@ class ViewController: UIViewController {
     }
     
     @IBAction func readButtonClicked(_ sender: UIButton) {
-        
+        var condition = self.createConditon(name: self.nameTextField.text, height: self.heightTextField.text)
+        if condition.isEmpty {
+            self.readSQLiteData()
+            return
+        }
+        self.readSQLiteData(cond: condition)
     }
     
     
@@ -113,4 +135,9 @@ class ViewController: UIViewController {
     }
     
 }
-
+extension ViewController:UITextFieldDelegate{
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
+}
