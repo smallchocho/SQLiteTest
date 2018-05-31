@@ -10,7 +10,7 @@ import Foundation
 class SQLiteManager{
     static let sqlitePath = NSHomeDirectory() + "/Documents/sqlite3.db"
     static let students = "students"
-    static let studentsColumsInfo = ["id integer primary key autoincrement","name text","height double"]
+    static let studentsColumsInfo = ["id integer primary key autoincrement","name text not null","height double not null"]
     let sqlitePath:String
     init?(path:String){
         sqlitePath = path
@@ -45,10 +45,16 @@ class SQLiteManager{
     }
     
     func creatStudentsDefaultData()->Bool{
-//        readData(name: SQLiteManager.students, cond: "1 == 1", order: nil) { (success, statement) in
-//            guard success else{ return }
-//            
-//        }
+        var isHasDefaultData = false
+        readData(name: SQLiteManager.students, cond: "1 == 1", order: nil) { (success, statement) in
+            if success {
+                isHasDefaultData = true
+            }
+        }
+        guard !isHasDefaultData else{
+            print("\(SQLiteManager.students) 資料已存在")
+            return true
+        }
         guard creatSQLiteTable(name: SQLiteManager.students, columsInfo: SQLiteManager.studentsColumsInfo) else{
             return false
         }
@@ -85,7 +91,7 @@ class SQLiteManager{
             + "values "
             + "(\(infoValues.joined(separator: ",")))"
         guard sqlite3_prepare_v2(db, (sql as NSString).utf8String, -1, &statement, nil) == SQLITE_OK else{
-            print("建立\(SQLiteManager.students) data失敗")
+            print("準備建立\(SQLiteManager.students) data失敗")
             return false
         }
         guard sqlite3_step(statement) == SQLITE_DONE else{
@@ -112,22 +118,42 @@ class SQLiteManager{
             completion(false,nil)
             return
         }
+        print("準備讀取\(name) 資料成功")
         while sqlite3_step(statement) == SQLITE_ROW {
             completion(true,statement)
         }
         sqlite3_finalize(statement)
     }
     
-    func updateDate(name:String,cond :String?, rowInfo :[String:String])->Bool{
+    func updateDate(name:String,cond :String?, rowInfo :[String:Any])->Bool{
         var statement:OpaquePointer?
         var sql = "update \(name) set"
+        var rowInfoValue:[String:String] = [:]
+        for info in rowInfo{
+            if let v = info.value as? String{
+                let str = "'\(v)'"
+                rowInfoValue[info.key] = str
+            }
+            if let v = info.value as? Double{
+                let str = String(v)
+                rowInfoValue[info.key] = str
+            }
+            if let v = info.value as? Int{
+                let str = String(v)
+                rowInfoValue[info.key] = str
+            }
+            if let v = info.value as? Float{
+                let str = String(v)
+                rowInfoValue[info.key] = str
+            }
+        }
         var info:[String] = []
-        for (k,v) in rowInfo{
-            info.append("\(k) = \(v)")
+        for (k,v) in rowInfoValue{
+            info.append(" \(k) = \(v)")
         }
         sql += info.joined(separator: ",")
         if let condition = cond {
-            sql += "where \(condition)"
+            sql += " where \(condition)"
         }
         let sqlite3Prepare = sqlite3_prepare_v2(db, (sql as NSString).utf8String, -1, &statement, nil)
         guard sqlite3Prepare == SQLITE_OK else{
@@ -147,7 +173,7 @@ class SQLiteManager{
         var statement:OpaquePointer?
         var sql = "delete from \(name)"
         if let condition = cond {
-            sql += "where \(condition)"
+            sql += " where \(condition)"
         }
         let sqlite3Prepare = sqlite3_prepare_v2(db, (sql as NSString).utf8String, -1, &statement, nil)
         guard sqlite3Prepare == SQLITE_OK else{
@@ -155,7 +181,6 @@ class SQLiteManager{
             return false
         }
         if sqlite3_step(statement) == SQLITE_DONE {
-            sqlite3_finalize(statement)
             print("刪除\(name) 資料成功")
             return true
         }
