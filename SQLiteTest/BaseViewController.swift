@@ -28,7 +28,7 @@ class BaseViewController:UIViewController{
         self.tempFrame = self.view.frame
         var info = notification.userInfo!
 //et keyboardy = (info[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue.origin.y
-        guard let keyboardHeight:CGFloat = (info[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue.size.height else{ return }
+        guard let keyboardHeight:CGFloat = (info[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue.size.height else{ return }
         let keyboardYPosition:CGFloat = self.view.frame.height - keyboardHeight
         let activeFieldFrame = self.activeField.convert(self.activeField.bounds, to: self.view)
         let textFieldYPosition:CGFloat = activeFieldFrame.origin.y
