@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0857235220C0E82600A5A3A8 /* BaseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0857235120C0E82600A5A3A8 /* BaseViewController.swift */; };
 		08BE8A9B20BBE6B000CB8C62 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08BE8A9A20BBE6B000CB8C62 /* AppDelegate.swift */; };
 		08BE8A9D20BBE6B000CB8C62 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08BE8A9C20BBE6B000CB8C62 /* ViewController.swift */; };
 		08BE8AA020BBE6B000CB8C62 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 08BE8A9E20BBE6B000CB8C62 /* Main.storyboard */; };
@@ -18,6 +19,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0857235120C0E82600A5A3A8 /* BaseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseViewController.swift; sourceTree = "<group>"; };
 		08BE8A9720BBE6B000CB8C62 /* SQLiteTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SQLiteTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		08BE8A9A20BBE6B000CB8C62 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		08BE8A9C20BBE6B000CB8C62 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -70,6 +72,7 @@
 				08BE8AAE20BBE80C00CB8C62 /* Header.h */,
 				08BE8A9A20BBE6B000CB8C62 /* AppDelegate.swift */,
 				08BE8A9C20BBE6B000CB8C62 /* ViewController.swift */,
+				0857235120C0E82600A5A3A8 /* BaseViewController.swift */,
 				08BE8A9E20BBE6B000CB8C62 /* Main.storyboard */,
 				08BE8AA120BBE6B200CB8C62 /* Assets.xcassets */,
 				08BE8AA320BBE6B200CB8C62 /* LaunchScreen.storyboard */,
@@ -191,6 +194,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				08BE8AB020BBE9C200CB8C62 /* SQLiteManager.swift in Sources */,
+				0857235220C0E82600A5A3A8 /* BaseViewController.swift in Sources */,
 				08BE8A9D20BBE6B000CB8C62 /* ViewController.swift in Sources */,
 				08BE8A9B20BBE6B000CB8C62 /* AppDelegate.swift in Sources */,
 			);
@@ -346,7 +350,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = seaFoodBon.SQLiteTest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = /Users/Justin/SQLiteTest/SQLiteTest/Header.h;
+				SWIFT_OBJC_BRIDGING_HEADER = /Users/justinhuang/Desktop/SQLiteTest/SQLiteTest/Header.h;
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -366,7 +370,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = seaFoodBon.SQLiteTest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = /Users/Justin/SQLiteTest/SQLiteTest/Header.h;
+				SWIFT_OBJC_BRIDGING_HEADER = /Users/justinhuang/Desktop/SQLiteTest/SQLiteTest/Header.h;
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
